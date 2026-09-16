@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:noteflow/screens/auth/login_screen.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:noteflow/screens/auth/register_screen.dart';
@@ -30,7 +31,8 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'NoteFlow',
       theme: ThemeData(useMaterial3: true),
-      home: const RegisterScreen(),
+      home: const LoginScreen(),
+      // home: const RegisterScreen(),
     );
   }
 }
