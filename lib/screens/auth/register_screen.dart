@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:noteflow/models/user.dart';
+import 'package:noteflow/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,6 +10,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final AuthService _authService = AuthService();
   // ============================================================
   // CONTROLLERS
   // ============================================================
@@ -25,20 +28,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _acceptedTerms = false;
   String? _termsError;
+  String? _registerError;
 
   bool _validateTerms() {
     if (!_acceptedTerms) {
       setState(() {
         _termsError = "Vous devez accepter les conditions d'utilisation";
       });
-
       return false;
     }
-
     setState(() {
       _termsError = null;
     });
-
     return true;
   }
   // ============================================================
@@ -488,45 +489,125 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildRegisterButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: () {
-          final formIsValid = _formKey.currentState!.validate();
-
-          final termsAreValid = _validateTerms();
-
-          final isValid = formIsValid && termsAreValid;
-
-          print('Formulaire valide : $isValid');
-
-          if (isValid) {
-            print('Tout est valide !');
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
+Widget _buildRegisterButton() {
+  return Column(
+    children: [
+      if (_registerError != null) ...[
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF2F2),
+            border: Border.all(
+              color: const Color(0xFFFCA5A5),
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 20,
+                color: Color(0xFFEF4444),
+              ),
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: Text(
+                  _registerError!,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    height: 18 / 13,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        child: const Text(
-          "S'inscrire",
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            height: 20 / 14,
+
+        const SizedBox(height: 12),
+      ],
+
+      SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton(
+          onPressed: () async {
+            final formIsValid =
+                _formKey.currentState!.validate();
+
+            final termsAreValid =
+                _validateTerms();
+
+            final isValid =
+                formIsValid && termsAreValid;
+
+            print('Formulaire valide : $isValid');
+
+            if (!isValid) {
+              return;
+            }
+
+            final user = User(
+              name: _nameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
+
+            try {
+              final userId =
+                  await _authService.register(user);
+
+              print(
+                'Utilisateur créé avec l\'ID : $userId',
+              );
+
+              setState(() {
+                _registerError = null;
+              });
+            } catch (e) {
+              setState(() {
+                _registerError =
+                    e.toString().replaceFirst(
+                      'Exception: ',
+                      '',
+                    );
+              });
+
+              print(
+                'Erreur inscription : $_registerError',
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+          ),
+          child: const Text(
+            "S'inscrire",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 20 / 14,
+            ),
           ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
 
   Widget _buildLoginLink(BuildContext context) {
     return Center(

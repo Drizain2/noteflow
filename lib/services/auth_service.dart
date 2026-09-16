@@ -6,10 +6,19 @@ class AuthService {
 
   // Inscription
   Future<int> register(User user) async {
-    final db = await _databaseHelper.database;
+  final existingUser = await findByEmail(user.email);
 
-    return await db.insert('users', user.toMap());
+  if (existingUser != null) {
+    throw Exception('Cette adresse email est déjà utilisée.');
   }
+
+  final db = await _databaseHelper.database;
+
+  return await db.insert(
+    'users',
+    user.toMap(),
+  );
+}
 
   // Recherche d'un utilisateur par email
   Future<User?> findByEmail(String email) async {
