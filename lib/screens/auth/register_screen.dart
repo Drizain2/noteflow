@@ -24,6 +24,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _acceptedTerms = false;
+  String? _termsError;
+
+  bool _validateTerms() {
+    if (!_acceptedTerms) {
+      setState(() {
+        _termsError = "Vous devez accepter les conditions d'utilisation";
+      });
+
+      return false;
+    }
+
+    setState(() {
+      _termsError = null;
+    });
+
+    return true;
+  }
   // ============================================================
   // DESIGN TOKENS — CLARITY NOTES
   // ============================================================
@@ -174,6 +191,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
               hintText: 'votre@email.com',
               prefixIcon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "L'adresse email est obligatoire";
+                }
+
+                final email = value.trim();
+
+                final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+                if (!emailRegex.hasMatch(email)) {
+                  return 'Veuillez saisir une adresse email valide';
+                }
+
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             // MOT DE PASSE
@@ -187,6 +219,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _isPasswordVisible = !_isPasswordVisible;
                 });
               },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Le mot de passe est obligatoire';
+                }
+
+                if (value.length < 6) {
+                  return 'Le mot de passe doit contenir au moins 6 caractères';
+                }
+
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             // CONFIRMATION
@@ -199,6 +242,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 setState(() {
                   _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
                 });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez confirmer le mot de passe';
+                }
+
+                if (value != _passwordController.text) {
+                  return 'Les mots de passe ne correspondent pas';
+                }
+
+                return null;
               },
             ),
             const SizedBox(height: 16),
@@ -233,43 +287,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return SizedBox(
-      height: 48,
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        validator: validator,
-        style: const TextStyle(
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: validator,
+
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 14,
+        color: textColor,
+      ),
+
+      decoration: InputDecoration(
+        hintText: hintText,
+
+        hintStyle: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
-          color: textColor,
+          color: placeholderColor,
         ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            color: placeholderColor,
-          ),
-          prefixIcon: Icon(prefixIcon, size: 20, color: secondaryTextColor),
-          filled: true,
-          fillColor: surfaceColor,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: inputBorderColor, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: inputBorderColor, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primaryColor, width: 1),
-          ),
+
+        prefixIcon: Icon(prefixIcon, size: 20, color: secondaryTextColor),
+
+        filled: true,
+        fillColor: surfaceColor,
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: inputBorderColor, width: 1),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: inputBorderColor, width: 1),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryColor, width: 1),
+        ),
+
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
       ),
     );
@@ -279,118 +349,141 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required TextEditingController controller,
     required bool isVisible,
     required VoidCallback onVisibilityChanged,
+    String? Function(String?)? validator,
   }) {
-    return SizedBox(
-      height: 48,
-      child: TextField(
-        controller: controller,
+    return TextFormField(
+      controller: controller,
+      obscureText: !isVisible,
+      validator: validator,
 
-        // true  = mot de passe caché
-        // false = mot de passe visible
-        obscureText: !isVisible,
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 14,
+        color: textColor,
+      ),
 
-        style: const TextStyle(
+      decoration: InputDecoration(
+        hintText: '••••••••',
+
+        hintStyle: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
-          color: textColor,
+          color: placeholderColor,
         ),
 
-        decoration: InputDecoration(
-          hintText: '••••••••',
+        prefixIcon: const Icon(
+          Icons.lock_outline,
+          size: 20,
+          color: secondaryTextColor,
+        ),
 
-          hintStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            color: placeholderColor,
-          ),
+        suffixIcon: IconButton(
+          onPressed: onVisibilityChanged,
 
-          prefixIcon: const Icon(
-            Icons.lock_outline,
+          icon: Icon(
+            isVisible
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             size: 20,
             color: secondaryTextColor,
           ),
+        ),
 
-          suffixIcon: IconButton(
-            onPressed: onVisibilityChanged,
+        filled: true,
+        fillColor: surfaceColor,
 
-            icon: Icon(
-              isVisible
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              size: 20,
-              color: secondaryTextColor,
-            ),
-          ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
 
-          filled: true,
-          fillColor: surfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: inputBorderColor, width: 1),
+        ),
 
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: inputBorderColor, width: 1),
+        ),
 
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: inputBorderColor, width: 1),
-          ),
-
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: inputBorderColor, width: 1),
-          ),
-
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primaryColor, width: 1),
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryColor, width: 1),
         ),
       ),
     );
   }
 
   Widget _buildTermsCheckbox() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 20,
-          height: 20,
-          child: Checkbox(
-            value: _acceptedTerms,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: Checkbox(
+                value: _acceptedTerms,
 
-            onChanged: (value) {
-              setState(() {
-                _acceptedTerms = value ?? false;
-              });
-            },
+                onChanged: (value) {
+                  setState(() {
+                    _acceptedTerms = value ?? false;
 
-            activeColor: primaryColor,
+                    // Si l'utilisateur coche la case,
+                    // on supprime immédiatement l'erreur.
+                    if (_acceptedTerms) {
+                      _termsError = null;
+                    }
+                  });
+                },
 
-            side: const BorderSide(color: inputBorderColor, width: 1.5),
+                activeColor: primaryColor,
 
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+                side: const BorderSide(color: inputBorderColor, width: 1.5),
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
 
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+            const SizedBox(width: 10),
+
+            const Expanded(
+              child: Text(
+                "J'accepte les conditions d'utilisation.",
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  height: 18 / 13,
+                  color: secondaryTextColor,
+                ),
+              ),
+            ),
+          ],
         ),
 
-        const SizedBox(width: 10),
+        if (_termsError != null) ...[
+          const SizedBox(height: 6),
 
-        const Expanded(
-          child: Text(
-            "J'accepte les conditions d'utilisation.",
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              height: 18 / 13,
-              color: secondaryTextColor,
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
+            child: Text(
+              _termsError!,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                color: Colors.red,
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -401,13 +494,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       height: 48,
       child: ElevatedButton(
         onPressed: () {
-          print('Nom : ${_nameController.text}');
-          print('Email : ${_emailController.text}');
-          print('Mot de passe : ${_passwordController.text}');
-          print(
-            'Confirmation : '
-            '${_confirmPasswordController.text}',
-          );
+          final formIsValid = _formKey.currentState!.validate();
+
+          final termsAreValid = _validateTerms();
+
+          final isValid = formIsValid && termsAreValid;
+
+          print('Formulaire valide : $isValid');
+
+          if (isValid) {
+            print('Tout est valide !');
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
