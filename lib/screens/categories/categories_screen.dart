@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../services/category_service.dart';
 import '../../services/session_service.dart';
+import '../../widgets/app_header.dart';
+import '../profile/profile_screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -38,37 +40,51 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
-      appBar: AppBar(
-        backgroundColor: background,
-        elevation: 0,
-        title: const Text(
-          'Categories',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: ink,
+      body: Column(
+        children: [
+          AppHeader(
+            onProfile: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
           ),
-        ),
-      ),
-      body: FutureBuilder<List<Category>>(
-        future: categoriesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(strokeWidth: 2),
-            );
-          }
-          final categories = snapshot.data ?? const <Category>[];
-          if (categories.isEmpty) return _buildEmptyState();
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-            itemCount: categories.length,
-            separatorBuilder: (_, index) => const SizedBox(height: 10),
-            itemBuilder: (context, index) =>
-                _buildCategoryTile(categories[index]),
-          );
-        },
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Categories',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: ink,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Category>>(
+              future: categoriesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                }
+                final categories = snapshot.data ?? const <Category>[];
+                if (categories.isEmpty) return _buildEmptyState();
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                  itemCount: categories.length,
+                  separatorBuilder: (_, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) =>
+                      _buildCategoryTile(categories[index]),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'categories-add-category',

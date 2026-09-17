@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/session_service.dart';
+import '../../widgets/app_header.dart';
 import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -25,22 +26,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final initial = name.isEmpty ? 'U' : name[0].toUpperCase();
     return Scaffold(
       backgroundColor: background,
-      appBar: AppBar(
-        backgroundColor: background,
-        elevation: 0,
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: ink,
-          ),
-        ),
-      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
         children: [
+          const AppHeader(),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
+            child: Text(
+              'Profil',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: ink,
+              ),
+            ),
+          ),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(

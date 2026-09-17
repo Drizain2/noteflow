@@ -5,6 +5,7 @@ import '../../models/note.dart';
 import '../../services/category_service.dart';
 import '../../services/note_service.dart';
 import '../../services/session_service.dart';
+import '../../widgets/app_header.dart';
 import '../notes/note_editor_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -68,8 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = SessionService.currentUser;
-    final firstName = user?.name.split(' ').first ?? 'vous';
+    final firstName =
+        SessionService.currentUser?.name.split(' ').first ?? 'vous';
 
     return Scaffold(
       backgroundColor: background,
@@ -82,7 +83,16 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                sliver: SliverToBoxAdapter(child: _buildHeader(firstName)),
+                sliver: SliverToBoxAdapter(
+                  child: AppHeader(
+                    onProfile: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    ),
+                    onNotifications: () =>
+                        _showMessage('Aucune nouvelle notification.'),
+                  ),
+                ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -118,60 +128,6 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add_rounded, size: 28),
       ),
-    );
-  }
-
-  Widget _buildHeader(String firstName) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: primary,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.edit_note_rounded,
-            color: Colors.white,
-            size: 26,
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Text(
-            'Clarity Notes',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: ink,
-            ),
-          ),
-        ),
-        IconButton(
-          tooltip: 'Notifications',
-          onPressed: () => _showMessage('Aucune nouvelle notification.'),
-          icon: const Icon(Icons.notifications_none_rounded, color: muted),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          ),
-          child: CircleAvatar(
-            radius: 19,
-            backgroundColor: const Color(0xFFDBEAFE),
-            child: Text(
-              firstName.isEmpty ? 'V' : firstName[0].toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: primary,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -698,20 +654,189 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _deleteNote(Note note) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Supprimer la note ?'),
-        content: const Text('Cette action est definitive.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
+      barrierColor: const Color(0x990F172A),
+      builder: (dialogContext) {
+        final category = _findCategoryFromFuture(note.categoryId);
+        final categoryColor = _categoryColor(note.categoryId);
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Supprimer'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFE4E1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.delete_forever_rounded,
+                      color: Color(0xFFB91C1C),
+                      size: 25,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Supprimer cette note ?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: ink,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text.rich(
+                    TextSpan(
+                      text:
+                          'Etes-vous sur de vouloir supprimer definitivement\nla note ',
+                      children: [
+                        TextSpan(
+                          text: '« ${note.title} »',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const TextSpan(
+                          text:
+                              ' ?\nCette action est irreversible et supprimera\negalement les donnees du stockage local SQLite.',
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 11,
+                      height: 1.55,
+                      color: muted,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F3FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (category != null)
+                              _buildNoteBadge(category.name, categoryColor),
+                            const Spacer(),
+                            Text(
+                              _formatTime(note.updatedAt),
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 10,
+                                color: muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          note.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: ink,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          note.content,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 11,
+                            height: 1.4,
+                            color: muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: TextButton(
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFE9EDFF),
+                              foregroundColor: muted,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Annuler',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: FilledButton.icon(
+                            onPressed: () => Navigator.pop(dialogContext, true),
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 16,
+                            ),
+                            label: const Text(
+                              'Supprimer',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFB91C1C),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
     if (confirmed != true || note.id == null) return;
     final userId = SessionService.currentUser?.id;
@@ -740,6 +865,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return "Aujourd'hui, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
     }
     return _formatDate(date);
+  }
+
+  String _formatTime(DateTime date) {
+    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   void _showMessage(String message) {

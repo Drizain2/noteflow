@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../models/note.dart';
 import '../../services/note_service.dart';
 import '../../services/session_service.dart';
+import '../../widgets/app_header.dart';
 import '../notes/note_editor_screen.dart';
+import '../profile/profile_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -38,22 +40,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
-      appBar: AppBar(
-        backgroundColor: background,
-        elevation: 0,
-        title: const Text(
-          'Calendrier',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: ink,
-          ),
-        ),
-      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
         children: [
+          AppHeader(
+            onProfile: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: Text(
+              'Calendrier',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: ink,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
           _buildDateCard(),
           const SizedBox(height: 26),
           Text(
