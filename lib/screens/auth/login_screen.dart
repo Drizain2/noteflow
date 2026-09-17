@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:noteflow/models/user.dart';
 import 'package:noteflow/services/auth_service.dart';
+import 'package:noteflow/services/session_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -315,20 +316,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               return;
                             }
-
                             setState(() {
                               _loginError = null;
                             });
-
+                          SessionService.login(user);
                             print('Connexion réussie : ${user.name}');
-
-                            print('ID utilisateur : ${user.id}');
+                            print( 'Utilisateur connecté : ${SessionService.currentUser!.id}');
                           } catch (e) {
                             setState(() {
                               _loginError =
                                   'Une erreur est survenue lors de la connexion.';
                             });
-
                             print('Erreur login : $e');
                           }
                         },
