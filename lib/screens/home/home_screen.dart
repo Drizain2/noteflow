@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../models/note.dart';
-import '../../services/note_service.dart';
 import '../../services/session_service.dart';
+import '../notes/note_editor_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
@@ -22,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final searchController = TextEditingController();
   late Future<List<Note>> notesFuture;
   String selectedCategory = 'Toutes';
-  int selectedTab = 0;
 
   final categories = const [
     ('Toutes', Color(0xFF2563EB), Color(0xFFEFF6FF)),
@@ -52,8 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final firstName =
-        SessionService.currentUser?.name.split(' ').first ?? 'vous';
+    final user = SessionService.currentUser;
+
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
@@ -107,13 +105,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showMessage('Creation de note'),
+        heroTag: 'home-add-note',
+        onPressed: _openNoteEditor,
         backgroundColor: primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add_rounded, size: 28),
       ),
-      bottomNavigationBar: _buildNavigation(),
     );
   }
 
@@ -289,63 +287,66 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNoteCard(Note note) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: line),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x080F172A),
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  note.title,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: ink,
+    return GestureDetector(
+      onTap: () => _openNoteEditorForNote(note),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: line),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x080F172A),
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    note.title,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: ink,
+                    ),
                   ),
                 ),
+                if (note.isImportant)
+                  const Icon(Icons.push_pin_rounded, size: 18, color: primary),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              note.content,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                height: 1.45,
+                color: muted,
               ),
-              if (note.isImportant)
-                const Icon(Icons.push_pin_rounded, size: 18, color: primary),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            note.content,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              height: 1.45,
-              color: muted,
             ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            _formatDate(note.updatedAt),
-            style: const TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 11,
-              color: Color(0xFF94A3B8),
+            const SizedBox(height: 14),
+            Text(
+              _formatDate(note.updatedAt),
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                color: Color(0xFF94A3B8),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -371,59 +372,29 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.w700,
               color: ink,
             ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Commencez par capturer une idee.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: muted),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildNavigation() {
-    return NavigationBar(
-      selectedIndex: selectedTab,
-      onDestinationSelected: (index) {
-        setState(() => selectedTab = index);
-        if (index != 0) {
-          _showMessage(
-            ['Accueil', 'Calendrier', 'Categories', 'Profil'][index],
-          );
-        }
-      },
-      backgroundColor: Colors.white,
-      indicatorColor: const Color(0xFFEFF6FF),
-      height: 70,
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Accueil',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.calendar_today_outlined),
-          selectedIcon: Icon(Icons.calendar_month_rounded),
-          label: 'Calendrier',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.folder_open_outlined),
-          selectedIcon: Icon(Icons.folder_rounded),
-          label: 'Categories',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
-        ),
-      ],
     );
   }
 
   String _formatDate(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  Future<void> _openNoteEditor() async {
+    await _openNoteEditorForNote();
+  }
+
+  Future<void> _openNoteEditorForNote([Note? note]) async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => NoteEditorScreen(note: note)),
+    );
+    if (saved == true && mounted) {
+      final refreshedNotes = _loadNotes();
+      setState(() => notesFuture = refreshedNotes);
+    }
+  }
 
   void _showMessage(String label) {
     ScaffoldMessenger.of(
