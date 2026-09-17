@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:noteflow/models/user.dart';
+import 'package:noteflow/screens/home/home_screen.dart';
 import 'package:noteflow/services/auth_service.dart';
 import 'package:noteflow/services/session_service.dart';
 
@@ -319,9 +320,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             setState(() {
                               _loginError = null;
                             });
-                          SessionService.login(user);
-                            print('Connexion réussie : ${user.name}');
-                            print( 'Utilisateur connecté : ${SessionService.currentUser!.id}');
+                            SessionService.login(user);
+                            if (!mounted) {
+                              return;
+                            }
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                            );
                           } catch (e) {
                             setState(() {
                               _loginError =
