@@ -1,0 +1,10 @@
+{
+    "chat.mcp.serverSampling": {
+        "noteflow/.vscode/mcp.json: my-mcp-server-55a06953": {
+            "allowedModels": [
+                "copilot/auto",
+                "copilotcli/auto"
+            ]
+        }
+    }
+}
