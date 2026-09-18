@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/note.dart';
 import '../../services/note_service.dart';
 import '../../services/session_service.dart';
-import '../../widgets/app_header.dart';
 import '../notes/note_editor_screen.dart';
-import '../profile/profile_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -41,24 +39,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: background,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         children: [
-          AppHeader(
-            onProfile: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: Text(
-              'Calendrier',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: ink,
-              ),
+          const Text(
+            'Calendrier',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: ink,
             ),
           ),
           const SizedBox(height: 14),

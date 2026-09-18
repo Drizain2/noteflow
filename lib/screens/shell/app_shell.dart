@@ -4,6 +4,7 @@ import '../calendar/calendar_screen.dart';
 import '../categories/categories_screen.dart';
 import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../widgets/app_header.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, this.initialIndex = 0});
@@ -33,6 +34,12 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppHeader(
+        onProfile: () => setState(() => selectedIndex = 3),
+        onNotifications: () => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aucune nouvelle notification.')),
+        ),
+      ),
       body: IndexedStack(index: selectedIndex, children: screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,

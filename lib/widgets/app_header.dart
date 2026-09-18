@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/session_service.dart';
 
-class AppHeader extends StatelessWidget {
+class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   const AppHeader({this.onProfile, this.onNotifications, super.key});
 
   final VoidCallback? onProfile;
@@ -13,13 +13,20 @@ class AppHeader extends StatelessWidget {
   static const primary = Color(0xFF2563EB);
 
   @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
   Widget build(BuildContext context) {
     final name = SessionService.currentUser?.name ?? 'Utilisateur';
     final initial = name.isEmpty ? 'U' : name[0].toUpperCase();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-      child: Row(
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: const Color(0xFFF8FAFC),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      titleSpacing: 20,
+      title: Row(
         children: [
           Container(
             width: 44,
@@ -46,12 +53,17 @@ class AppHeader extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: onNotifications,
-            icon: const Icon(Icons.notifications_none_rounded, color: muted),
-          ),
-          GestureDetector(
+        ],
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'Notifications',
+          onPressed: onNotifications,
+          icon: const Icon(Icons.notifications_none_rounded, color: muted),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: GestureDetector(
             onTap: onProfile,
             child: CircleAvatar(
               radius: 19,
@@ -65,8 +77,8 @@ class AppHeader extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

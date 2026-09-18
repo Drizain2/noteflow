@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../services/category_service.dart';
 import '../../services/session_service.dart';
-import '../../widgets/app_header.dart';
-import '../profile/profile_screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -42,12 +40,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       backgroundColor: background,
       body: Column(
         children: [
-          AppHeader(
-            onProfile: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ),
-          ),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
             child: Align(

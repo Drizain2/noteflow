@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../services/session_service.dart';
-import '../../widgets/app_header.dart';
 import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,19 +26,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: background,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         children: [
-          const AppHeader(),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: Text(
-              'Profil',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: ink,
-              ),
+          const Text(
+            'Profil',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: ink,
             ),
           ),
           Container(

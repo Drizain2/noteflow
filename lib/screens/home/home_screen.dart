@@ -5,9 +5,7 @@ import '../../models/note.dart';
 import '../../services/category_service.dart';
 import '../../services/note_service.dart';
 import '../../services/session_service.dart';
-import '../../widgets/app_header.dart';
 import '../notes/note_editor_screen.dart';
-import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,9 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final firstName =
-        SessionService.currentUser?.name.split(' ').first ?? 'vous';
-
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
@@ -82,25 +77,12 @@ class _HomeScreenState extends State<HomeScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: AppHeader(
-                    onProfile: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    ),
-                    onNotifications: () =>
-                        _showMessage('Aucune nouvelle notification.'),
-                  ),
-                ),
-              ),
-              SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 sliver: SliverToBoxAdapter(child: _buildSearch()),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 25, 20, 0),
-                sliver: SliverToBoxAdapter(child: _buildWelcome(firstName)),
+                sliver: SliverToBoxAdapter(child: _buildWelcome()),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -163,7 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWelcome(String firstName) {
+  Widget _buildWelcome() {
+    final firstName =
+        SessionService.currentUser?.name.split(' ').first ?? 'a vous';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -871,9 +855,4 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
 }
